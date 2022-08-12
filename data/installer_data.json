@@ -1,0 +1,64 @@
+{
+    "os_list": [
+        {
+            "name": "AOSC OS Desktop",
+            "default_os_name": "AOSC OS",
+            "boot_object": "m1n1.bin",
+            "next_object": "m1n1/boot.bin",
+            "package": "aosc-os-desktop-m1-DATA.zip",
+            "supported_fw": [
+                "12.3",
+                "12.4"
+            ],
+            "partitions": [
+                {
+                    "name": "EFI",
+                    "type": "EFI",
+                    "size": "500MB",
+                    "format": "fat",
+                    "volume_id": "0x2abf9f91",
+                    "copy_firmware": true,
+                    "copy_installer_data": true,
+                    "source": "esp"
+                },
+                {
+                    "name": "Root",
+                    "type": "Linux",
+                    "size": "12GB",
+                    "expand": true,
+                    "image": "root.img"
+                }
+            ]
+        },
+        {
+            "name": "AOSC OS Base",
+            "default_os_name": "AOSC OS",
+            "boot_object": "m1n1.bin",
+            "next_object": "m1n1/boot.bin",
+            "package": "aosc-os-base-m1-DATA.zip",
+            "supported_fw": [
+                "12.3",
+                "12.4"
+            ],
+            "partitions": [
+                {
+                    "name": "EFI",
+                    "type": "EFI",
+                    "size": "500MB",
+                    "format": "fat",
+                    "volume_id": "0x2abf9f91",
+                    "copy_firmware": true,
+                    "copy_installer_data": true,
+                    "source": "esp"
+                },
+                {
+                    "name": "Root",
+                    "type": "Linux",
+                    "size": "5GB",
+                    "expand": true,
+                    "image": "root.img"
+                }
+            ]
+        }
+    ]
+}
