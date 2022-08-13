@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh 
 # SPDX-License-Identifier: MIT
 
 set -e
@@ -7,11 +7,11 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
-export VERSION_FLAG=https://cdn.asahilinux.org/installer/latest
+export VERSION_FLAG=$(curl https://cdn.asahilinux.org/installer/latest)
 export INSTALLER_BASE=https://cdn.asahilinux.org/installer
 export INSTALLER_DATA=https://raw.githubusercontent.com/AOSC-Dev/aosc-asahi-installer/master/data/installer_data.json
 export REPO_BASE=https://repo.aosc.io/misc
-PKG=installer.tar.gz
+PKG=installer-$VERSION_FLAG.tar.gz
 
 #TMP="$(mktemp -d)"
 TMP=/tmp/asahi-install
@@ -24,7 +24,7 @@ cd "$TMP"
 
 echo "  Downloading..."
 
-curl --no-progress-meter -L -O "$INSTALLER_BASE/$PKG"
+curl --no-progress-meter -L -O "$INSTALLER_BASE/installer-$VERSION_FLAG.tar.gz"
 curl --no-progress-meter -L -O "$INSTALLER_DATA"
 
 echo "  Extracting..."
