@@ -10,7 +10,7 @@ export PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 export VERSION_FLAG=https://cdn.asahilinux.org/installer/latest
 export INSTALLER_BASE=https://cdn.asahilinux.org/installer
 export INSTALLER_DATA=https://raw.githubusercontent.com/AOSC-Dev/aosc-asahi-installer/master/data/installer_data.json
-export REPO_BASE=https://releases.aosc.io/os-arm64
+export REPO_BASE=https://repo.aosc.io/misc
 PKG=installer.tar.gz
 
 #TMP="$(mktemp -d)"

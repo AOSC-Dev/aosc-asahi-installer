@@ -35,7 +35,7 @@
             "default_os_name": "AOSC OS",
             "boot_object": "m1n1.bin",
             "next_object": "m1n1/boot.bin",
-            "package": "base/aosc-os-base-m1-DATA.zip",
+            "package": "aosc_base.zip",
             "supported_fw": [
                 "12.3",
                 "12.4"

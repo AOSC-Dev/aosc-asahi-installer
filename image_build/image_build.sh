@@ -81,6 +81,7 @@ make_image() {
     echo "## Making image $imgname"
     echo "### Cleaning up..."
     rm -rf "$ROOT/var/cache/apt"
+    rm -rf /kernem.deb
     echo "### Calculating image size..."
     size="$(du -B M -s "$ROOT" | cut -dM -f1)"
     echo "### Image size: $size MiB"

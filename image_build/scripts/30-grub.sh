@@ -1,7 +1,5 @@
 #!/bin/sh
 
-apt-get install -y grub
-
 set -e
 
 MODULES="ext2 part_gpt search"
