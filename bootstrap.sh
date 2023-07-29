@@ -1,17 +1,17 @@
-#!/bin/sh 
+#!/bin/sh
 # SPDX-License-Identifier: MIT
 
 set -e
+
 
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
-export VERSION_FLAG=$(curl https://cdn.asahilinux.org/installer/latest)
+export REPO_BASE="https://repo.aosc.io/aosc-m1/"
+export VERSION_FLAG=https://cdn.asahilinux.org/installer/latest
 export INSTALLER_BASE=https://cdn.asahilinux.org/installer
-export INSTALLER_DATA=https://raw.githubusercontent.com/AOSC-Dev/aosc-asahi-installer/master/data/installer_data.json
-export REPO_BASE=https://repo.aosc.io/misc
-PKG=installer-$VERSION_FLAG.tar.gz
+export INSTALLER_DATA="$REPO_BASE"/installer_data.json
 
 #TMP="$(mktemp -d)"
 TMP=/tmp/asahi-install
@@ -19,13 +19,29 @@ TMP=/tmp/asahi-install
 echo
 echo "Bootstrapping installer:"
 
+if [ -e "$TMP" ]; then
+    mv "$TMP" "$TMP-$(date +%Y%m%d-%H%M%S)"
+fi
+
 mkdir -p "$TMP"
 cd "$TMP"
 
+echo "  Checking version..."
+
+PKG_VER="$(curl --no-progress-meter -L "$VERSION_FLAG")"
+echo "  Version: $PKG_VER"
+
+PKG="installer-$PKG_VER.tar.gz"
+
 echo "  Downloading..."
 
-curl --no-progress-meter -L -O "$INSTALLER_BASE/installer-$VERSION_FLAG.tar.gz"
-curl --no-progress-meter -L -O "$INSTALLER_DATA"
+curl --no-progress-meter -L -o "$PKG" "$INSTALLER_BASE/$PKG"
+if ! curl --no-progress-meter -L -O "$INSTALLER_DATA"; then
+	echo "    Error downloading installer_data.json. GitHub might be blocked in your network."
+	echo "    Please consider using a VPN if you experience issues."
+	echo "    Trying workaround..."
+	curl --no-progress-meter -L -O "$INSTALLER_DATA_ALT"
+fi
 
 echo "  Extracting..."
 
@@ -41,4 +57,3 @@ if [ "$USER" != "root" ]; then
 else
     exec caffeinate -dis ./install.sh "$@"
 fi
-
