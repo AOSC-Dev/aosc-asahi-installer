@@ -1,59 +1,140 @@
-#!/bin/sh
+#!/usr/bin/env bash
+
 # SPDX-License-Identifier: MIT
 
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o xtrace
 
+cd "$(dirname "$0")"
 
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
-export PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+unset LC_CTYPE
+unset LANG
 
-export REPO_BASE="https://repo.aosc.io/aosc-m1/"
-export VERSION_FLAG=https://cdn.asahilinux.org/installer/latest
-export INSTALLER_BASE=https://cdn.asahilinux.org/installer
-export INSTALLER_DATA="$REPO_BASE"/installer_data.json
+build_rootfs()
+{
+(
+        sudo rm -rf aosc-system
+        mkdir -p cache
+	sudo aoscbootstrap stable ./aosc-system http://192.168.1.5:2345/aosc/debs/ --arch=arm64 --config=/usr/share/aoscbootstrap/config/aosc-mainline.toml
 
-#TMP="$(mktemp -d)"
-TMP=/tmp/asahi-install
+        cd aosc-system
 
-echo
-echo "Bootstrapping installer:"
+        sudo mkdir -p boot/efi/m1n1 etc/X11/xorg.conf.d
 
-if [ -e "$TMP" ]; then
-    mv "$TMP" "$TMP-$(date +%Y%m%d-%H%M%S)"
-fi
+        sudo bash -c 'echo aosc > etc/hostname'
 
-mkdir -p "$TMP"
-cd "$TMP"
+	sudo chroot . apt update
+	sudo chroot . apt upgrade -y
 
-echo "  Checking version..."
+        sudo cp ../../files/rc.local etc/rc.local
+        sudo cp ../../files/30-modeset.conf etc/X11/xorg.conf.d/30-modeset.conf
+        sudo cp ../../files/blacklist.conf etc/modprobe.d/
 
-PKG_VER="$(curl --no-progress-meter -L "$VERSION_FLAG")"
-echo "  Version: $PKG_VER"
+        sudo cp ../../files/grub etc/default/grub
+        sudo -- perl -p -i -e 's/root:x:/root::/' etc/passwd
 
-PKG="installer-$PKG_VER.tar.gz"
+        sudo -- ln -s lib/systemd/systemd init
+        sudo chroot . apt update
+        wget https://repo.aosc.io/debs/pool/kernel-m1/main/l/linux-kernel-m1-6.3.5_6.3.5-0_arm64.deb
+        wget https://thomas.glanzmann.de/asahi/2023-03-20/m1n1_1.2.4-2_arm64.deb
+        sudo chroot . apt install -y ./linux-kernel-m1-6.3.5_6.3.5-0_arm64.deb ./m1n1_1.2.4-2_arm64.deb
+        sudo chroot . apt clean
+        sudo rm var/lib/apt/lists/* || true
+)
+}
 
-echo "  Downloading..."
+build_dd()
+{
+(
+        rm -f media
+        fallocate -l 3G media
+        mkdir -p mnt
+        mkfs.ext4 media
+        tune2fs -O extents,uninit_bg,dir_index -m 0 -c 0 -i 0 media
+        sudo mount -o loop media mnt
+	sudo rsync -axv --info=progress2 testing/ mnt/
+        sudo rm -rf mnt/init mnt/boot/efi/m1n1
+        sudo umount mnt
+)
+}
 
-curl --no-progress-meter -L -o "$PKG" "$INSTALLER_BASE/$PKG"
-if ! curl --no-progress-meter -L -O "$INSTALLER_DATA"; then
-	echo "    Error downloading installer_data.json. GitHub might be blocked in your network."
-	echo "    Please consider using a VPN if you experience issues."
-	echo "    Trying workaround..."
-	curl --no-progress-meter -L -O "$INSTALLER_DATA_ALT"
-fi
+build_efi()
+{
+(
+        rm -rf EFI
+        mkdir -p EFI/boot EFI/grub
+	cp testing/usr/lib/grub/arm64-efi/monolithic/grubaa64.efi EFI/boot/bootaa64.efi
+        export INITRD=`ls -1 testing/boot/ | grep initrd`
+        export VMLINUZ=`ls -1 testing/boot/ | grep vmlinuz`
+        export UUID=`blkid -s UUID -o value media`
+        cat > EFI/grub/grub.cfg <<EOF
+search.fs_uuid ${UUID} root
+linux (\$root)/boot/${VMLINUZ} root=UUID=${UUID} rw net.ifnames=0 usbcore.autosuspend=-1
+initrd (\$root)/boot/${INITRD}
+boot
+EOF
+)
+}
 
-echo "  Extracting..."
+build_asahi_installer_image()
+{
+(
+        rm -rf aii
+        mkdir -p aii/esp/m1n1
+        cp -a EFI aii/esp/
+        cp testing/usr/lib/m1n1/boot.bin aii/esp/m1n1/boot.bin
+        ln media aii/media
+        cd aii
+        zip -r9 ../aosc-base.zip esp media
+)
+}
 
-tar xf "$PKG"
+# build_desktop_rootfs_image()
+# {
+# 	CHROOT=testing
+# 	sudo mount proc-live -t proc ${CHROOT}/proc
+# 	sudo mount devpts-live -t devpts -o gid=5,mode=620 ${CHROOT}/dev/pts || true
+# 	sudo mount sysfs-live -t sysfs ${CHROOT}/sys
+# 	sudo chroot testing apt update
+# 	sudo chroot testing apt install -y lightdm xserver-xorg deepin-desktop-environment-cli deepin-desktop-environment-core deepin-desktop-environment-base deepin-desktop-environment-extras libssl-dev firefox
+# 	sudo chroot testing apt clean
+# 	sudo rm testing/var/lib/apt/lists/* || true
 
-echo "  Initializing..."
-echo
+# 	sudo chroot testing useradd -m -s /bin/bash hiweed
+# 	sudo chroot testing usermod -aG sudo hiweed
+# 	echo "Set passwd for default user hiweed"
+# 	sudo chroot testing bash -c 'echo -e "1\n1" | passwd hiweed'
 
-if [ "$USER" != "root" ]; then
-    echo "The installer needs to run as root."
-    echo "Please enter your sudo password if prompted."
-    exec caffeinate -dis sudo -E ./install.sh "$@"
-else
-    exec caffeinate -dis ./install.sh "$@"
-fi
+# 	sudo umount -l ${CHROOT}/proc
+# 	sudo umount -l ${CHROOT}/dev/pts
+# 	sudo umount -l ${CHROOT}/sys
+
+# 	# resize rootfs
+# 	fallocate -l 10G media
+# 	e2fsck -f media
+# 	resize2fs -p media
+
+# 	sudo mount -o loop media mnt
+# 	sudo rsync -axv --info=progress2 testing/ mnt/
+#         sudo rm -rf mnt/init mnt/boot/efi/m1n1
+#         sudo umount mnt
+	
+# 	rm -rf aii
+#         mkdir -p aii/esp/m1n1
+#         cp -a EFI aii/esp/
+#         cp testing/usr/lib/m1n1/boot.bin aii/esp/m1n1/boot.bin
+#         ln media aii/media
+#         cd aii
+#         zip -r9 ../deepin-desktop.zip esp media
+# }
+
+mkdir -p build
+cd build
+
+build_rootfs
+build_dd
+build_efi
+build_asahi_installer_image
+# build_desktop_rootfs_image

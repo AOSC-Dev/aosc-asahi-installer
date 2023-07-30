@@ -5,3 +5,4 @@ image_build/root/*
 /*.squashfs
 /*.zip
 /media
+/build
