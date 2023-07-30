@@ -20,7 +20,7 @@
                 {
                     "name": "Root",
                     "type": "Linux",
-                    "size": "5GB",
+                    "size": "6GB",
                     "expand": true,
                     "image": "media"
                 }
