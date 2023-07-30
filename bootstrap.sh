@@ -41,9 +41,10 @@ build_rootfs()
 
         sudo cp ../../files/rc.local etc/rc.local
         sudo cp ../../files/30-modeset.conf etc/X11/xorg.conf.d/30-modeset.conf
-        sudo cp ../../files/blacklist.conf etc/modprobe.d/\
-	sudo mkdir -pv etc/dracut.conf.d
-	sudo cp ../../files/10-asahi.conf etc/dracut.conf.d/10-asahi.conf
+        sudo cp ../../files/blacklist.conf etc/modprobe.d/
+	sudo mkdir -pv usr/lib/dracut/{dracut.conf.d,modules.d}
+	sudo cp ../../files/dracut/10-asahi.conf usr/lib/dracut/dracut.conf.d/10-asahi.conf
+	sudo cp -r ../../files/dracut/modules.d usr/lib/dracut/
 
         sudo cp ../../files/grub etc/default/grub
         sudo -- perl -p -i -e 's/root:x:/root::/' etc/passwd
@@ -150,4 +151,4 @@ build_rootfs
 build_dd
 build_efi
 build_asahi_installer_image
-# build_desktop_rootfs_image
+#build_desktop_rootfs_image
