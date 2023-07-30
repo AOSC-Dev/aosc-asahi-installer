@@ -28,7 +28,7 @@ build_rootfs()
 			/usr/share/aoscbootstrap/scripts/enable-nvidia-drivers.sh \
 		-s \
 			/usr/share/aoscbootstrap/scripts/enable-dkms.sh \
-		--include-files /usr/share/aoscbootstrap/recipes/base.lst
+		--include-files "../asahi-base.lst"
 
         cd aosc-system
 
