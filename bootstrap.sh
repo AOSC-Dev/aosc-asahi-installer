@@ -41,7 +41,9 @@ build_rootfs()
 
         sudo cp ../../files/rc.local etc/rc.local
         sudo cp ../../files/30-modeset.conf etc/X11/xorg.conf.d/30-modeset.conf
-        sudo cp ../../files/blacklist.conf etc/modprobe.d/
+        sudo cp ../../files/blacklist.conf etc/modprobe.d/\
+	sudo mkdir -pv etc/dracut.conf.d
+	sudo cp ../../files/10-asahi.conf etc/dracut.conf.d/10-asahi.conf
 
         sudo cp ../../files/grub etc/default/grub
         sudo -- perl -p -i -e 's/root:x:/root::/' etc/passwd
