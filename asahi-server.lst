@@ -1,0 +1,7 @@
+%include /usr/share/aoscbootstrap/recipes/mainline/server-common.lst
+dracut
+firmware-free
+firmware-nonfree
+kmod
+openfwwf
+wireless-regdb

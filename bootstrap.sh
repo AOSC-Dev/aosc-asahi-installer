@@ -1,95 +1,118 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash -e
 
-# SPDX-License-Identifier: MIT
+# Enabling some extra Bash scripting features.
+shopt -s extglob
 
-set -o errexit
-set -o nounset
-set -o pipefail
-set -o xtrace
+# Short hands for formatted output.
+abwarn() { echo -e "[\e[33mWARN\e[0m]:  \e[1m$*\e[0m"; }
+aberr()  { echo -e "[\e[31mERROR\e[0m]: \e[1m$*\e[0m"; }
+abinfo() { echo -e "[\e[96mINFO\e[0m]:  \e[1m$*\e[0m"; }
+abdbg()  { echo -e "[\e[32mDEBUG\e[0m]: \e[1m$*\e[0m"; }
 
-cd "$(dirname "$0")"
+build_rootfs() {
+	abinfo "${FUNCNAME[0]}: Performing pre-build clean up ($1) ..."
+        rm -rf aosc-system-$1
 
-unset LC_CTYPE
-unset LANG
-
-build_rootfs()
-{
-(
-	#sudo umount aosc-system/boot/efi
-        sudo rm -rf aosc-system
-        mkdir -p cache
-	sudo aoscbootstrap \
-		stable ./aosc-system http://localhost/debs/ \
+	abinfo "${FUNCNAME[0]}: Generating system release ($1) ..."
+	aoscbootstrap \
+		stable ./aosc-system-$1 http://localhost/debs/ \
 		--config=/usr/share/aoscbootstrap/config/aosc-mainline.toml \
 		-x \
 		--arch=arm64 \
 		-s \
 			/usr/share/aoscbootstrap/scripts/reset-repo.sh \
 		-s \
-			/usr/share/aoscbootstrap/scripts/enable-nvidia-drivers.sh \
-		-s \
 			/usr/share/aoscbootstrap/scripts/enable-dkms.sh \
-		--include-files "../asahi-base.lst"
+		--include-files ../asahi-$1.lst
+}
 
-        cd aosc-system
+build_postinst() {
+	abinfo "${FUNCNAME[0]}: Running post-generation steps ($1) ..."
+	cd aosc-system-$1
+        mkdir -pv \
+		boot/efi/m1n1 \
+		etc/X11/xorg.conf.d
 
-        sudo mkdir -p boot/efi/m1n1 etc/X11/xorg.conf.d
+	abinfo "${FUNCNAME[0]}: Setting hostname ($1) ..."
+        echo aosc-asahi > etc/hostname
 
-        sudo bash -c 'echo aosc > etc/hostname'
+	abinfo "${FUNCNAME[0]}: Installing device initialisation scripts ($1) ..."
+	install -Dvm644 ../../files/rc.local \
+		etc/rc.local
+        install -Dvm644 ../../files/30-modeset.conf \
+		etc/X11/xorg.conf.d/30-modeset.conf
+        install -Dvm644 ../../files/blacklist.conf \
+		etc/modprobe.d/
+	install -Dvm644 ../../files/dracut/10-asahi.conf \
+		usr/lib/dracut/dracut.conf.d/10-asahi.conf
+	cp -rv ../../files/dracut/modules.d \
+		usr/lib/dracut/
 
-	sudo arch-chroot . apt update
-	sudo arch-chroot . apt upgrade -y
+	abinfo "${FUNCNAME[0]}: Installing GRUB configuration ($1) ..."
+        install -Dvm644 ../../files/grub etc/default/grub
 
-        sudo cp ../../files/rc.local etc/rc.local
-        sudo cp ../../files/30-modeset.conf etc/X11/xorg.conf.d/30-modeset.conf
-        sudo cp ../../files/blacklist.conf etc/modprobe.d/
-	sudo mkdir -pv usr/lib/dracut/{dracut.conf.d,modules.d}
-	sudo cp ../../files/dracut/10-asahi.conf usr/lib/dracut/dracut.conf.d/10-asahi.conf
-	sudo cp -r ../../files/dracut/modules.d usr/lib/dracut/
-
-        sudo cp ../../files/grub etc/default/grub
-        sudo -- perl -p -i -e 's/root:x:/root::/' etc/passwd
-
-        sudo -- ln -s lib/systemd/systemd init
-        sudo arch-chroot . apt update
+	abinfo "${FUNCNAME[0]}: Installing kernel and bootloader ($1) ..."
+        arch-chroot . \
+		apt update
         wget https://repo.aosc.io/debs/pool/kernel-m1/main/l/linux-kernel-m1-6.3.5_6.3.5-0_arm64.deb
         wget https://thomas.glanzmann.de/asahi/2023-03-20/m1n1_1.2.4-2_arm64.deb
-        sudo arch-chroot . apt install -y ./linux-kernel-m1-6.3.5_6.3.5-0_arm64.deb ./m1n1_1.2.4-2_arm64.deb
-        sudo arch-chroot . apt clean
-        sudo rm var/lib/apt/lists/* || true
-)
+        arch-chroot . \
+		apt install -y \
+			./linux-kernel-m1-6.3.5_6.3.5-0_arm64.deb \
+			./m1n1_1.2.4-2_arm64.deb
+
+	abinfo "${FUNCNAME[0]}: Cleaning up ($1) ..."
+        arch-chroot . apt clean
+	rm -v ./*.deb
+        rm -v var/lib/apt/lists/!(auxfiles|partial)
+
+	cd ..
 }
 
-build_dd()
-{
-(
-        rm -f media
-        fallocate -l 6G media
-        mkdir -p mnt
-        mkfs.ext4 media
-        tune2fs -O extents,uninit_bg,dir_index -m 0 -c 0 -i 0 media
-        sudo mount -o loop media mnt
-	sudo rsync -axv --info=progress2 aosc-system/ mnt/
-        sudo rm -rf mnt/init mnt/boot/efi/m1n1
-        sudo umount mnt
-)
+build_sys_image() {
+	abinfo "${FUNCNAME[0]}: Performing pre-build clean up ($1) ..."
+	umount -Rf mnt_$1 || true
+        rm -fv media_$1
+
+	abinfo "${FUNCNAME[0]}: Detecting image size ..."
+	# Note: ext4 reserves 5% by default, giving it 50% for collaterals.
+	local image_size="$(printf %.$2f $(echo $(du -sb aosc-system-$1 | cut -f1)*1.5 | bc))"
+	abinfo "${FUNCNAME[0]}: Determined image size as $image_size Bytes ..."
+
+	abinfo "${FUNCNAME[0]}: Generating image ($1) ..."
+        fallocate -l ${image_size} media_$1
+
+	abinfo "${FUNCNAME[0]}: Preparing filesystem ($1) ..."
+        mkfs.ext4 media_$1
+
+	abinfo "${FUNCNAME[0]}: Preparing mount points ($1) ..."
+	mkdir -pv mnt_$1
+        mount -o loop media_$1 mnt_$1
+
+	abinfo "${FUNCNAME[0]}: Transferring files to system image ($1) ..."
+	rsync -aAX --info=progress2 aosc-system-$1/ mnt_$1/
+
+	abinfo "${FUNCNAME[0]}: Performing post-build clean up ($1) ..."
+        umount -Rf mnt_$1
 }
 
-build_efi()
-{
-(
-	rm -rf EFI
-	mkdir -p EFI/BOOT
-	mkdir -p EFI/grub
-        export UUID=`blkid -s UUID -o value media`
-	cat > grub.cfg <<EOF
-search.fs_uuid $UUID root
-linux (\$root)/boot/vmlinux-6.3.5-aosc-m1 root=UUID=$UUID rw net.ifnames=0 usbcore.autosuspend=-1
+build_grub_efi_image() {
+	abinfo "${FUNCNAME[0]}: Performing pre-build clean up ($1) ..."
+	rm -rfv EFI
+
+	abinfo "${FUNCNAME[0]}: Preparing to build GRUB EFI image ($1) ..."
+	mkdir -p EFI/{BOOT,aosc,grub}
+        local GRUB_UUID=`blkid -s UUID -o value media_$1`
+
+	echo "Generating grub.cfg ($1) ..."
+	cat > grub.cfg << EOF
+search.fs_uuid $GRUB_UUID root
+linux (\$root)/boot/vmlinux-6.3.5-aosc-m1 root=UUID=$GRUB_UUID rw usbcore.autosuspend=-1
 initrd (\$root)/boot/initramfs-6.3.5-aosc-m1.img
 boot
 EOF
 
-CD_MODULES="
+GRUB_MODULES="
         all_video
         boot
         btrfs
@@ -152,9 +175,6 @@ CD_MODULES="
         zfscrypt
         zfsinfo
         fdt
-        "
-
-GRUB_MODULES="$CD_MODULES
         cryptodisk
         gcry_arcfour
         gcry_blowfish
@@ -185,77 +205,52 @@ GRUB_MODULES="$CD_MODULES
         mdraid1x
         raid5rec
         raid6rec
-        "
+"
 
-	sudo /usr/bin/grub-mkimage \
+	abinfo "${FUNCNAME[0]}: Generating GRUB image ($1) ..."
+	/usr/bin/grub-mkimage \
         	-O arm64-efi \
         	-o ./bootaa64.efi \
         	-p /EFI/aosc \
         	$GRUB_MODULES
 
-        sudo cp -v ./bootaa64.efi EFI/BOOT/BOOTAA64.EFI
-	sudo mkdir -pv EFI/aosc
-	sudo cp -v ./grub.cfg EFI/aosc
-)
+	abinfo "${FUNCNAME[0]}: Installing GRUB image ($1) ..."
+        install -Dvm644 -v ./bootaa64.efi EFI/BOOT/BOOTAA64.EFI
+	install -Dvm644 -v ./grub.cfg EFI/aosc
 }
 
-build_asahi_installer_image()
-{
-(
-        rm -rf aii
-        mkdir -p aii/esp/m1n1
-        cp -a EFI aii/esp/
-        cp aosc-system/usr/lib/m1n1/boot.bin aii/esp/m1n1/boot.bin
-        ln media aii/media
-        cd aii
-        zip -r9 ../aosc-base.zip esp media
-)
+build_asahi_installer_image() {
+	abinfo "${FUNCNAME[0]}: Performing pre-build clean up ($1) ..."
+	rm -rfv aii
+
+	abinfo "${FUNCNAME[0]}: Assembling files ($1) ..."
+        install -Dvm644 aosc-system-$1/usr/lib/m1n1/boot.bin \
+		aii/esp/m1n1/boot.bin
+	cp -av EFI \
+		aii/esp/
+        ln -v media_$1 \
+		aii/media
+
+	abinfo "${FUNCNAME[0]}: Generating system release archive ($1) ..."
+	cd aii
+        zip -r9 ../aosc-os_${1}_$(date +%Y%m%d)_arm64+asahi.zip esp media
+	cd ..
+	sha256sum aosc-os_${1}_$(date +%Y%m%d)_arm64+asahi.zip \
+		>> aosc-os_${1}_$(date +%Y%m%d)_arm64+asahi.zip.sha256sum
 }
 
-# build_desktop_rootfs_image()
-# {
-# 	arch-chroot=aosc-system
-# 	sudo mount proc-live -t proc ${arch-chroot}/proc
-# 	sudo mount devpts-live -t devpts -o gid=5,mode=620 ${arch-chroot}/dev/pts || true
-# 	sudo mount sysfs-live -t sysfs ${arch-chroot}/sys
-# 	sudo arch-chroot aosc-system apt update
-# 	sudo arch-chroot aosc-system apt install -y lightdm xserver-xorg deepin-desktop-environment-cli deepin-desktop-environment-core deepin-desktop-environment-base deepin-desktop-environment-extras libssl-dev firefox
-# 	sudo arch-chroot aosc-system apt clean
-# 	sudo rm aosc-system/var/lib/apt/lists/* || true
-
-# 	sudo arch-chroot aosc-system useradd -m -s /bin/bash hiweed
-# 	sudo arch-chroot aosc-system usermod -aG sudo hiweed
-# 	echo "Set passwd for default user hiweed"
-# 	sudo arch-chroot aosc-system bash -c 'echo -e "1\n1" | passwd hiweed'
-
-# 	sudo umount -l ${arch-chroot}/proc
-# 	sudo umount -l ${arch-chroot}/dev/pts
-# 	sudo umount -l ${arch-chroot}/sys
-
-# 	# resize rootfs
-# 	fallocate -l 10G media
-# 	e2fsck -f media
-# 	resize2fs -p media
-
-# 	sudo mount -o loop media mnt
-# 	sudo rsync -axv --info=progress2 aosc-system/ mnt/
-#         sudo rm -rf mnt/init mnt/boot/efi/m1n1
-#         sudo umount mnt
-	
-# 	rm -rf aii
-#         mkdir -p aii/esp/m1n1
-#         cp -a EFI aii/esp/
-#         cp aosc-system/usr/lib/m1n1/boot.bin aii/esp/m1n1/boot.bin
-#         ln media aii/media
-#         cd aii
-#         zip -r9 ../deepin-desktop.zip esp media
-# 
-
-mkdir -p build
+abinfo "Creating directories ..."
+mkdir -pv build
 cd build
 
-#build_rootfs
-#build_dd
-build_efi
-build_asahi_installer_image
-#build_desktop_rootfs_image
+abinfo "Setting time zone to UTC ..."
+export TZ=UTC
+
+for i in "$@"; do
+	abinfo "Genrating system release ($i) ..."
+	build_rootfs $i
+	build_postinst $i
+	build_sys_image $i
+	build_grub_efi_image $i
+	build_asahi_installer_image $i
+done
