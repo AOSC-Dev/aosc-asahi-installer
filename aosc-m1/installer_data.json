@@ -6,7 +6,6 @@
             "boot_object": "m1n1.bin",
             "next_object": "m1n1/boot.bin",
             "package": "aosc-base.zip",
-            "supported_fw": ["12.3", "12.4"],
             "partitions": [
                 {
                     "name": "EFI",
@@ -32,7 +31,6 @@
             "boot_object": "m1n1.bin",
             "next_object": "m1n1/boot.bin",
             "package": "aosc-desktop.zip",
-            "supported_fw": ["12.3", "12.4"],
             "partitions": [
                 {
                     "name": "EFI",

@@ -6,3 +6,4 @@ image_build/root/*
 /*.zip
 /media
 /build
+/metadata_generater/target/*
