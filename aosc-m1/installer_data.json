@@ -1,54 +1,52 @@
-{
-    "os_list": [
-        {
-            "name": "AOSC OS Base",
-            "default_os_name": "AOSC",
-            "boot_object": "m1n1.bin",
-            "next_object": "m1n1/boot.bin",
-            "package": "aosc-base.zip",
-            "partitions": [
-                {
-                    "name": "EFI",
-                    "type": "EFI",
-                    "size": "512MB",
-                    "format": "fat",
-                    "copy_firmware": true,
-                    "copy_installer_data": true,
-                    "source": "esp"
-                },
-                {
-                    "name": "Root",
-                    "type": "Linux",
-                    "size": "6GB",
-                    "expand": true,
-                    "image": "media"
-                }
-            ]
-        },
-	{
-            "name": "AOSC OS Desktop",
-            "default_os_name": "AOSC",
-            "boot_object": "m1n1.bin",
-            "next_object": "m1n1/boot.bin",
-            "package": "aosc-desktop.zip",
-            "partitions": [
-                {
-                    "name": "EFI",
-                    "type": "EFI",
-                    "size": "512MB",
-                    "format": "fat",
-                    "copy_firmware": true,
-                    "copy_installer_data": true,
-                    "source": "esp"
-                },
-                {
-                    "name": "Root",
-                    "type": "Linux",
-                    "size": "50GB",
-                    "expand": true,
-                    "image": "media"
-                }
-            ]
-        }
+[
+  {
+    "name": "aosc-os_base_20231109_arm64+asahi",
+    "default_os_name": "AOSC OS",
+    "boot_object": "m1n1.bin",
+    "next_object": "m1n1/boot.bin",
+    "package": "aosc-os_base_20231109_arm64+asahi.zip",
+    "partitions": [
+      {
+        "name": "EFI",
+        "type": "EFI",
+        "size": "512MB",
+        "format": "fat",
+        "copy_firmware": true,
+        "copy_installer_data": true,
+        "source": "esp"
+      },
+      {
+        "name": "Root",
+        "type": "Linux",
+        "size": "6GB",
+        "expand": true,
+        "image": "media"
+      }
     ]
-}
+  },
+  {
+    "name": "aosc-os_desktop_20231109_arm64+asahi",
+    "default_os_name": "AOSC OS",
+    "boot_object": "m1n1.bin",
+    "next_object": "m1n1/boot.bin",
+    "package": "aosc-os_desktop_20231109_arm64+asahi.zip",
+    "partitions": [
+      {
+        "name": "EFI",
+        "type": "EFI",
+        "size": "512MB",
+        "format": "fat",
+        "copy_firmware": true,
+        "copy_installer_data": true,
+        "source": "esp"
+      },
+      {
+        "name": "Root",
+        "type": "Linux",
+        "size": "32GB",
+        "expand": true,
+        "image": "media"
+      }
+    ]
+  }
+]
