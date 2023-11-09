@@ -13,7 +13,7 @@ struct Args {
     #[arg(long, short = 'n')]
     os_name: String,
     #[arg(long, value_parser = clap::value_parser!(u32).range(100..))]
-    efi_size: usize,
+    efi_size: u32,
 }
 
 #[derive(Debug, Serialize)]
