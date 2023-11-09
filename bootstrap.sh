@@ -15,6 +15,7 @@ unset LANG
 build_rootfs()
 {
 (
+	#sudo umount aosc-system/boot/efi
         sudo rm -rf aosc-system
         mkdir -p cache
 	sudo aoscbootstrap \
@@ -77,18 +78,124 @@ build_dd()
 build_efi()
 {
 (
-        rm -rf EFI
-        mkdir -p EFI/boot EFI/grub
-	cp aosc-system/usr/lib/grub/arm64-efi/bootarm.efi EFI/boot/bootaa64.efi
-        export INITRD=`ls -1 aosc-system/boot/ | grep initrd`
-        export VMLINUZ=`ls -1 aosc-system/boot/ | grep vmlinuz`
+	rm -rf EFI
+	mkdir -p EFI/BOOT
+	mkdir -p EFI/grub
         export UUID=`blkid -s UUID -o value media`
-        cat > EFI/grub/grub.cfg <<EOF
-search.fs_uuid ${UUID} root
-linux (\$root)/boot/${VMLINUZ} root=UUID=${UUID} rw net.ifnames=0 usbcore.autosuspend=-1
-initrd (\$root)/boot/${INITRD}
+	cat > grub.cfg <<EOF
+search.fs_uuid $UUID root
+linux (\$root)/boot/vmlinux-6.3.5-aosc-m1 root=UUID=$UUID rw net.ifnames=0 usbcore.autosuspend=-1
+initrd (\$root)/boot/initramfs-6.3.5-aosc-m1.img
 boot
 EOF
+
+CD_MODULES="
+        all_video
+        boot
+        btrfs
+        cat
+        chain
+        configfile
+        echo
+        efifwsetup
+        efinet
+        ext2
+        fat
+        font
+        f2fs
+        gettext
+        gfxmenu
+        gfxterm
+        gfxterm_background
+        gzio
+        halt
+        help
+        hfsplus
+        iso9660
+        jfs
+        jpeg
+        keystatus
+        loadenv
+        loopback
+        linux
+        ls
+        lsefi
+        lsefimmap
+        lsefisystab
+        lssal
+        memdisk
+        minicmd
+        normal
+        ntfs
+        part_apple
+        part_msdos
+        part_gpt
+        password_pbkdf2
+        png
+        probe
+        reboot
+        regexp
+        search
+        search_fs_uuid
+        search_fs_file
+        search_label
+        serial
+        sleep
+        smbios
+        squash4
+        test
+        tpm
+        true
+        video
+        xfs
+        zfs
+        zfscrypt
+        zfsinfo
+        fdt
+        "
+
+GRUB_MODULES="$CD_MODULES
+        cryptodisk
+        gcry_arcfour
+        gcry_blowfish
+        gcry_camellia
+        gcry_cast5
+        gcry_crc
+        gcry_des
+        gcry_dsa
+        gcry_idea
+        gcry_md4
+        gcry_md5
+        gcry_rfc2268
+        gcry_rijndael
+        gcry_rmd160
+        gcry_rsa
+        gcry_seed
+        gcry_serpent
+        gcry_sha1
+        gcry_sha256
+        gcry_sha512
+        gcry_tiger
+        gcry_twofish
+        gcry_whirlpool
+        luks
+        luks2
+        lvm
+        mdraid09
+        mdraid1x
+        raid5rec
+        raid6rec
+        "
+
+	sudo /usr/bin/grub-mkimage \
+        	-O arm64-efi \
+        	-o ./bootaa64.efi \
+        	-p /EFI/aosc \
+        	$GRUB_MODULES
+
+        sudo cp -v ./bootaa64.efi EFI/BOOT/BOOTAA64.EFI
+	sudo mkdir -pv EFI/aosc
+	sudo cp -v ./grub.cfg EFI/aosc
 )
 }
 
@@ -142,13 +249,13 @@ build_asahi_installer_image()
 #         ln media aii/media
 #         cd aii
 #         zip -r9 ../deepin-desktop.zip esp media
-# }
+# 
 
 mkdir -p build
 cd build
 
-build_rootfs
-build_dd
+#build_rootfs
+#build_dd
 build_efi
 build_asahi_installer_image
 #build_desktop_rootfs_image
