@@ -32,11 +32,17 @@ struct Partition {
     #[serde(rename = "type")]
     part_type: String,
     size: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     format: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     copy_firmware: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     copy_installer_data: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     source: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     expand: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     image: Option<String>,
 }
 
