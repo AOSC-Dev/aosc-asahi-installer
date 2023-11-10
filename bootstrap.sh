@@ -110,6 +110,8 @@ initrd (\$root)/boot/initramfs-6.3.5-aosc-m1.img
 boot
 EOF
 
+# Debian: see https://salsa.debian.org/philh/grub2/-/blob/dgit/sid/debian/build-efi-images
+# Integrate as many modules as possible, in order to make GRUB discover partitions by UUID
 GRUB_MODULES="
         all_video
         boot
