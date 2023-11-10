@@ -7,3 +7,4 @@ image_build/root/*
 /media
 /build
 /metadata_generater/target/*
+/aosc-m1
