@@ -6,7 +6,7 @@
       "boot_object": "m1n1.bin",
       "next_object": "m1n1/boot.bin",
       "package": "aosc-os_server_20231109_arm64+asahi.zip",
-      "support_fw": [
+      "supported_fw": [
         "13.5"
       ],
       "partitions": [
@@ -34,7 +34,7 @@
       "boot_object": "m1n1.bin",
       "next_object": "m1n1/boot.bin",
       "package": "aosc-os_base_20231109_arm64+asahi.zip",
-      "support_fw": [
+      "supported_fw": [
         "13.5"
       ],
       "partitions": [
@@ -62,7 +62,7 @@
       "boot_object": "m1n1.bin",
       "next_object": "m1n1/boot.bin",
       "package": "aosc-os_desktop_20231109_arm64+asahi.zip",
-      "support_fw": [
+      "supported_fw": [
         "13.5"
       ],
       "partitions": [
