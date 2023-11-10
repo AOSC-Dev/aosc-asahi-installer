@@ -89,7 +89,10 @@ build_sys_image() {
 
 	abinfo "${FUNCNAME[0]}: Detecting image size ..."
 	# Note: ext4 reserves 5% by default, giving it 50% for collaterals.
-	local image_size="$(printf %.$2f $(echo $(du -sb aosc-system-$1 | cut -f1)*1.5 | bc))"
+	# CAUTION: image size should be multiple of 16,777,216 (16 MiB).
+	# Otherwise, the writting process will fail, because the content
+	# is not equal to buffer size.
+	local image_size="$(echo "v=$(du -sb aosc-system-$1 | cut -f1)*1.5;b=16777216;v=(v+b)/b;v*b" | bc)"
 	abinfo "${FUNCNAME[0]}: Determined image size as $image_size Bytes ..."
 
 	abinfo "${FUNCNAME[0]}: Generating image ($1) ..."
