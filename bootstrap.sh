@@ -46,9 +46,6 @@ build_postinst() {
 	cp -rv ../../files/dracut/modules.d \
 		usr/lib/dracut/
 
-	abinfo "${FUNCNAME[0]}: Installing GRUB configuration ($1) ..."
-        install -Dvm644 ../../files/grub etc/default/grub
-
 	abinfo "${FUNCNAME[0]}: Installing kernel and bootloader ($1) ..."
         arch-chroot . \
 		apt update
