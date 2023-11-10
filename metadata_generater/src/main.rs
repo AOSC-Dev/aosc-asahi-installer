@@ -28,6 +28,7 @@ struct Os {
     boot_object: String,
     next_object: String,
     package: String,
+    support_fw: Vec<String>,
     partitions: Vec<Partition>,
 }
 
@@ -94,6 +95,7 @@ fn main() -> Result<()> {
                 boot_object: "m1n1.bin".to_string(),
                 next_object: "m1n1/boot.bin".to_string(),
                 package: name,
+                support_fw: vec!["13.5".to_string()],
                 partitions: vec![
                     Partition {
                         name: "EFI".to_string(),
@@ -122,9 +124,7 @@ fn main() -> Result<()> {
         }
     }
 
-    let os = OsList {
-        os_list: res
-    };
+    let os = OsList { os_list: res };
 
     let s = serde_json::to_string_pretty(&os)?;
     println!("{s}");
