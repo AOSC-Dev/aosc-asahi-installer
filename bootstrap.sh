@@ -61,6 +61,21 @@ build_postinst() {
 			./linux-kernel-m1-6.3.5_6.3.5-0_arm64.deb \
 			./m1n1_1.2.4-2_arm64.deb
 
+	abinfo "${FUNCNAME[0]}: Setting up firstboot ($1) ..."
+	mkdir -pv etc/systemd/system/systemd-firstboot.service.d/
+
+	cat > etc/systemd/system/systemd-firstboot.service.d/no-prompt.conf << EOF
+[Service]
+ExecStart=
+ExecStart=systemd-firstboot
+EOF
+
+	mkdir -pv usr/share/asahi-scripts
+	cp -v ../../files/firstboot usr/bin/firstboot
+	cp -v ../../files/functions.sh usr/share/asahi-scripts/functions.sh
+	cp -v ../../files/firstboot.service usr/lib/systemd/system
+
+
 	abinfo "${FUNCNAME[0]}: Cleaning up ($1) ..."
         arch-chroot . apt clean
 	rm -v ./*.deb
