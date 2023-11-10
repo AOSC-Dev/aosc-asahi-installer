@@ -17,6 +17,11 @@ struct Args {
 }
 
 #[derive(Debug, Serialize)]
+struct OsList {
+    os_list: Vec<Os>,
+}
+
+#[derive(Debug, Serialize)]
 struct Os {
     name: String,
     default_os_name: String,
@@ -117,7 +122,11 @@ fn main() -> Result<()> {
         }
     }
 
-    let s = serde_json::to_string_pretty(&res)?;
+    let os = OsList {
+        os_list: res
+    };
+
+    let s = serde_json::to_string_pretty(&os)?;
     println!("{s}");
 
     Ok(())
