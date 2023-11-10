@@ -37,8 +37,6 @@ build_postinst() {
         echo aosc-asahi > etc/hostname
 
 	abinfo "${FUNCNAME[0]}: Installing device initialisation scripts ($1) ..."
-	install -Dvm644 ../../files/rc.local \
-		etc/rc.local
         install -Dvm644 ../../files/30-modeset.conf \
 		etc/X11/xorg.conf.d/30-modeset.conf
         install -Dvm644 ../../files/blacklist.conf \
