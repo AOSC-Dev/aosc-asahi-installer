@@ -143,5 +143,5 @@ fn format_name(name: &str) -> Option<String> {
         .map(|x| x.to_uppercase().collect::<String>() + c.as_str())?;
     let version = spl.next()?;
 
-    Some(format!("{name} {edition} {version}"))
+    Some(format!("{name} {edition} ({version})"))
 }
