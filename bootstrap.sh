@@ -71,10 +71,13 @@ build_sys_image() {
 
 	abinfo "${FUNCNAME[0]}: Detecting image size ..."
 	# Note: ext4 reserves 5% by default, giving it 50% for collaterals.
-	# CAUTION: image size should be multiple of 16,777,216 (16 MiB).
-	# Otherwise, the writting process will fail, because the content
-	# is not equal to buffer size.
-	local image_size="$(echo "v=$(du -sb aosc-system-$1 | cut -f1)*1.5;b=16777216;v=(v+b)/b;v*b" | bc)"
+	# CAUTION: image size should be multiple of 4,096 (4 KiB).
+	# According to [1], a image size not divisible to 4,096 will cause
+	# EINVAL during the dd process. The image size is not necessarily
+	# divisible to 16MiB, but it should be divisible to logical block
+	# size, which is 4 KiB.
+	# [1]: https://github.com/AsahiLinux/asahi-installer/pull/236#issuecomment-1805853152
+	local image_size="$(echo "scale=0;v=$(du -sb aosc-system-$1 | cut -f1)*1.5;b=4096;v=(v+b)/b;v*b" | bc)"
 	abinfo "${FUNCNAME[0]}: Determined image size as $image_size Bytes ..."
 
 	abinfo "${FUNCNAME[0]}: Generating image ($1) ..."
