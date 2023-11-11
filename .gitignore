@@ -2,9 +2,10 @@ image_build/dl/*
 image_build/files/*
 image_build/images/*
 image_build/root/*
-/*.squashfs
-/*.zip
-/media
-/build
-/metadata_generater/target/*
-/aosc-m1
+*.squashfs
+*.zip
+media/
+build/
+metadata_generater/target/*
+aosc-m1/
+asahi/
