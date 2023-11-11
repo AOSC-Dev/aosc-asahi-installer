@@ -36,6 +36,22 @@ build_postinst() {
 	abinfo "${FUNCNAME[0]}: Setting hostname ($1) ..."
         echo aosc-asahi > etc/hostname
 
+	abinfo "${FUNCNAME[0]}: Setting up a default user (aosc) ($1) ..."
+	arch-chroot . \
+		useradd aosc -m
+	arch-chroot . \
+		usermod -a -G audio,cdrom,video,wheel aosc
+
+	abinfo "${FUNCNAME[0]}: Setting up a default password (anthon) ($1) ..."
+	arch-chroot . \
+		echo 'aosc:anthon' | chpasswd -c SHA512 -R /
+
+	abinfo "${FUNCNAME[0]}: Setting up a login banner to prompt user of the default user and password ($1) ..."
+	mkdir -pv etc/issue.d
+	cat > etc/issue.d/asahi.issue << EOF
+Note: Default user is 'aosc', default password is 'anthon'.
+EOF
+
 	abinfo "${FUNCNAME[0]}: Installing device initialisation scripts ($1) ..."
         install -Dvm644 ../../files/30-modeset.conf \
 		etc/X11/xorg.conf.d/30-modeset.conf
