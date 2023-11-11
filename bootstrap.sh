@@ -44,7 +44,7 @@ build_postinst() {
 
 	abinfo "${FUNCNAME[0]}: Setting up a default password (anthon) ($1) ..."
 	arch-chroot . \
-		echo 'aosc:anthon' | chpasswd -c SHA512 -R /
+		bash -c "echo 'aosc:anthon' | chpasswd -c SHA512"
 
 	abinfo "${FUNCNAME[0]}: Setting up a login banner to prompt user of the default user and password ($1) ..."
 	mkdir -pv etc/issue.d
