@@ -46,15 +46,28 @@ build_postinst() {
 	cp -rv ../../files/dracut/modules.d \
 		usr/lib/dracut/
 
-	abinfo "${FUNCNAME[0]}: Installing kernel and bootloader ($1) ..."
+	abinfo "${FUNCNAME[0]}: Installing kernel and bootloader data ($1) ..."
         arch-chroot . \
 		apt update
-        wget https://repo.aosc.io/debs/pool/kernel-m1/main/l/linux-kernel-m1-6.3.5_6.3.5-0_arm64.deb
-        wget https://thomas.glanzmann.de/asahi/2023-03-20/m1n1_1.2.4-2_arm64.deb
+	wget \
+		https://repo.aosc.io/debs/pool/kernel-m1/main/l/linux-kernel-m1-6.3.5_6.3.5-0_arm64.deb \
+		https://repo.aosc.io/debs/pool/kernel-m1/main/m/m1n1_1.4.6-0_arm64.deb \
+		https://repo.aosc.io/debs/pool/kernel-m1/main/u/uboot-asahi_2023.07.02+3-0_arm64.deb
         arch-chroot . \
 		apt install -y \
 			./linux-kernel-m1-6.3.5_6.3.5-0_arm64.deb \
-			./m1n1_1.2.4-2_arm64.deb
+			./m1n1_1.4.6-0_arm64.deb \
+			./uboot-asahi_2023.07.02+3-0_arm64.deb
+
+	abinfo "${FUNCNAME[0]}: Assembling m1n1 bootloader image ($1) ..."
+	# Note: The m1n1.bin bootloader image is a concat-ed image with m1n1,
+	# device trees (from Kernel), u-boot, and bootloader configuration bundled.
+	#
+	# Ref: https://github.com/AsahiLinux/asahi-scripts/blob/4788327780a583b7ed701bc400394816b9792c53/update-m1n1#L51
+	cat usr/lib/asahi-boot/m1n1.bin >> boot/boot.bin
+	cat usr/lib/aosc-os-arm64-boot/dtbs-kernel-6.3.5-aosc-m1/*.dtb >> boot/boot.bin
+	gzip -c usr/lib/uboot-asahi/u-boot-nodtb.bin >> boot/boot.bin
+	cat etc/m1n1.conf >> boot/boot.bin
 
 	abinfo "${FUNCNAME[0]}: Cleaning up ($1) ..."
         arch-chroot . apt clean
@@ -227,7 +240,7 @@ build_asahi_installer_image() {
 	rm -rfv aii
 
 	abinfo "${FUNCNAME[0]}: Assembling files ($1) ..."
-        install -Dvm644 aosc-system-$1/usr/lib/m1n1/boot.bin \
+        install -Dvm644 aosc-system-$1/boot/boot.bin \
 		aii/esp/m1n1/boot.bin
 	cp -av EFI \
 		aii/esp/
