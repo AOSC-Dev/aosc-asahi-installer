@@ -88,13 +88,14 @@ fn main() -> Result<()> {
                 / 1024.0;
 
             let rootfs_size = format!("{}GB", size.round() as u64);
+            let name = name.strip_suffix(".zip").unwrap_or(&name);
 
             res.push(Os {
-                name: name.strip_suffix(".zip").unwrap_or(&name).to_string(),
+                name: format_name(name).unwrap_or(name.to_string()),
                 default_os_name: os_name.to_string(),
                 boot_object: "m1n1.bin".to_string(),
                 next_object: "m1n1/boot.bin".to_string(),
-                package: name,
+                package: name.to_string(),
                 supported_fw: vec!["13.5".to_string()],
                 partitions: vec![
                     Partition {
@@ -130,4 +131,18 @@ fn main() -> Result<()> {
     println!("{s}");
 
     Ok(())
+}
+
+fn format_name(name: &str) -> Option<String> {
+    let mut spl = name.split("_");
+    let name = spl.next()?.replace("-", " ").to_ascii_uppercase();
+    let edition = spl.next()?;
+    let mut c = edition.chars();
+    let edition = match c.next() {
+        None => String::new(),
+        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+    };
+    let version = spl.next()?;
+
+    Some(format!("{name} {edition} {version}"))
 }
