@@ -8,7 +8,7 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
-export REPO_BASE="https://repo.aosc.io/aosc-m1/"
+export REPO_BASE="https://repo.aosc.io/aosc-os/os-arm64/asahi"
 export VERSION_FLAG=https://cdn.asahilinux.org/installer/latest
 export INSTALLER_BASE=https://cdn.asahilinux.org/installer
 export INSTALLER_DATA="$REPO_BASE"/installer_data.json
