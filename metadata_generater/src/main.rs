@@ -138,10 +138,9 @@ fn format_name(name: &str) -> Option<String> {
     let name = spl.next()?.replace("-", " ").to_ascii_uppercase();
     let edition = spl.next()?;
     let mut c = edition.chars();
-    let edition = match c.next() {
-        None => return None,
-        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
-    };
+    let edition = c
+        .next()
+        .map(|x| x.to_uppercase().collect::<String>() + c.as_str())?;
     let version = spl.next()?;
 
     Some(format!("{name} {edition} {version}"))
