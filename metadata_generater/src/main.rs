@@ -125,6 +125,8 @@ fn main() -> Result<()> {
         }
     }
 
+    res.sort_unstable_by(|x, y| x.name.cmp(&y.name));
+
     let os = OsList { os_list: res };
 
     let s = serde_json::to_string_pretty(&os)?;
