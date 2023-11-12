@@ -65,7 +65,7 @@ fn main() -> Result<()> {
 
     for i in dir.flatten() {
         if i.path().extension().map(|x| x == "zip").unwrap_or(false) {
-            let name = i
+            let file_name = i
                 .file_name()
                 .to_str()
                 .map(|x| x.to_string())
@@ -88,14 +88,14 @@ fn main() -> Result<()> {
                 / 1024.0;
 
             let rootfs_size = format!("{}GB", size.round() as u64);
-            let name = name.strip_suffix(".zip").unwrap_or(&name);
+            let display_name = file_name.strip_suffix(".zip").unwrap_or(&file_name);
 
             res.push(Os {
-                name: format_name(name).unwrap_or(name.to_string()),
+                name: format_name(display_name).unwrap_or(display_name.to_string()),
                 default_os_name: os_name.to_string(),
                 boot_object: "m1n1.bin".to_string(),
                 next_object: "m1n1/boot.bin".to_string(),
-                package: name.to_string(),
+                package: file_name.to_string(),
                 supported_fw: vec!["13.5".to_string()],
                 partitions: vec![
                     Partition {
