@@ -114,7 +114,7 @@ build_grub_efi_image() {
 	rm -rfv EFI
 
 	abinfo "${FUNCNAME[0]}: Preparing to build GRUB EFI image ($1) ..."
-	mkdir -p EFI/{BOOT,aosc,grub}
+	mkdir -p EFI/{BOOT,aosc}
 	local GRUB_UUID=`blkid -s UUID -o value rootfs_$1`
 
 	local _vmlinux=$(basename $(ls -d aosc-system-$i/boot/vmlinux-*-aosc-asahi | sort -rV | head -1))
