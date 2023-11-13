@@ -61,7 +61,7 @@ EOF
 	#
 	# Ref: https://github.com/AsahiLinux/asahi-scripts/blob/4788327780a583b7ed701bc400394816b9792c53/update-m1n1#L51
 	cat usr/lib/asahi-boot/m1n1.bin >> boot/boot.bin
-	cat usr/lib/aosc-os-arm64-boot/dtbs-kernel-6.3.5-aosc-m1/*.dtb >> boot/boot.bin
+	cat usr/lib/aosc-os-arm64-boot/dtbs-kernel-$(basename $(ls -d usr/lib/modules/*-aosc-asahi | sort -rV | head -1 ))/*.dtb >> boot/boot.bin
 	gzip -c usr/lib/uboot-asahi/u-boot-nodtb.bin >> boot/boot.bin
 	cat etc/m1n1.conf >> boot/boot.bin
 
@@ -109,11 +109,14 @@ build_grub_efi_image() {
 	mkdir -p EFI/{BOOT,aosc,grub}
         local GRUB_UUID=`blkid -s UUID -o value media_$1`
 
-	echo "Generating grub.cfg ($1) ..."
+	local _vmlinux=$(basename $(ls -d aosc-system-$i/boot/vmlinux-*-aosc-asahi | sort -rV | head -1))
+	local _initrd=$(basename $(ls -d aosc-system-$i/boot/initramfs-*aosc-asahi.img | sort -rV | head -1))
+
+	abinfo "${FUNCNAME[0]}: Generating grub.cfg ($1) ..."
 	cat > grub.cfg << EOF
 search.fs_uuid $GRUB_UUID root
-linux (\$root)/boot/vmlinux-6.3.5-aosc-m1 root=UUID=$GRUB_UUID rw usbcore.autosuspend=-1
-initrd (\$root)/boot/initramfs-6.3.5-aosc-m1.img
+linux (\$root)/boot/$_vmlinux root=UUID=$GRUB_UUID quiet rw rd.auto rd.auto=1 splash
+initrd (\$root)/boot/$_initrd
 boot
 EOF
 
