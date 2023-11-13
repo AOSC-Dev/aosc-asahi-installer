@@ -14,6 +14,8 @@ struct Args {
     os_name: String,
     #[arg(long, value_parser = clap::value_parser!(u32).range(100..))]
     efi_size: u32,
+    #[arg(long, short)]
+    image_name: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -57,6 +59,7 @@ fn main() -> Result<()> {
         path,
         os_name,
         efi_size,
+        image_name,
     } = Args::parse();
 
     let dir = fs::read_dir(path)?;
@@ -77,7 +80,7 @@ fn main() -> Result<()> {
 
             for i in 0..zip.len() {
                 let file = zip.by_index(i)?;
-                if file.name() == "media" {
+                if file.name() == image_name {
                     size = Some(file.size());
                 }
             }
@@ -118,7 +121,7 @@ fn main() -> Result<()> {
                         copy_installer_data: None,
                         source: None,
                         expand: Some(true),
-                        image: Some("media".to_string()),
+                        image: Some(image_name.clone()),
                     },
                 ],
             });
