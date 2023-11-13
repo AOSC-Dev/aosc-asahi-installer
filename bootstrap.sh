@@ -29,9 +29,6 @@ build_rootfs() {
 build_postinst() {
 	abinfo "${FUNCNAME[0]}: Running post-generation steps ($1) ..."
 	cd aosc-system-$1
-        mkdir -pv \
-		boot/efi/m1n1 \
-		etc/X11/xorg.conf.d
 
 	abinfo "${FUNCNAME[0]}: Setting hostname ($1) ..."
         echo aosc-asahi > etc/hostname
@@ -52,29 +49,6 @@ build_postinst() {
 Note: Default user is 'aosc', default password is 'anthon'.
 EOF
 
-	abinfo "${FUNCNAME[0]}: Installing device initialisation scripts ($1) ..."
-        install -Dvm644 ../../files/30-modeset.conf \
-		etc/X11/xorg.conf.d/30-modeset.conf
-        install -Dvm644 ../../files/blacklist.conf \
-		etc/modprobe.d/
-	install -Dvm644 ../../files/dracut/10-asahi.conf \
-		usr/lib/dracut/dracut.conf.d/10-asahi.conf
-	cp -rv ../../files/dracut/modules.d \
-		usr/lib/dracut/
-
-	abinfo "${FUNCNAME[0]}: Installing kernel and bootloader data ($1) ..."
-        arch-chroot . \
-		apt update
-	wget \
-		https://repo.aosc.io/debs/pool/kernel-m1/main/l/linux-kernel-m1-6.3.5_6.3.5-0_arm64.deb \
-		https://repo.aosc.io/debs/pool/kernel-m1/main/m/m1n1_1.4.6-0_arm64.deb \
-		https://repo.aosc.io/debs/pool/kernel-m1/main/u/uboot-asahi_2023.07.02+3-0_arm64.deb
-        arch-chroot . \
-		apt install -y \
-			./linux-kernel-m1-6.3.5_6.3.5-0_arm64.deb \
-			./m1n1_1.4.6-0_arm64.deb \
-			./uboot-asahi_2023.07.02+3-0_arm64.deb
-
 	abinfo "${FUNCNAME[0]}: Assembling m1n1 bootloader image ($1) ..."
 	# Note: The m1n1.bin bootloader image is a concat-ed image with m1n1,
 	# device trees (from Kernel), u-boot, and bootloader configuration bundled.
@@ -84,11 +58,6 @@ EOF
 	cat usr/lib/aosc-os-arm64-boot/dtbs-kernel-6.3.5-aosc-m1/*.dtb >> boot/boot.bin
 	gzip -c usr/lib/uboot-asahi/u-boot-nodtb.bin >> boot/boot.bin
 	cat etc/m1n1.conf >> boot/boot.bin
-
-	abinfo "${FUNCNAME[0]}: Cleaning up ($1) ..."
-        arch-chroot . apt clean
-	rm -v ./*.deb
-        rm -v var/lib/apt/lists/!(auxfiles|partial)
 
 	cd ..
 }
