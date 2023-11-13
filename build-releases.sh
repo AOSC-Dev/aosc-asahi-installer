@@ -269,6 +269,9 @@ abinfo "Setting time zone to UTC ..."
 export TZ=UTC
 
 for i in "$@"; do
+	abinfo "Performing pre-build clean up ($i) ..."
+	build_clean_up $i
+
 	abinfo "Generating system release ($i) ..."
 	build_rootfs $i
 	build_postinst $i
