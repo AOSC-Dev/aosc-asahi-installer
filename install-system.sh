@@ -3,57 +3,63 @@
 
 set -e
 
-
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
+export LC_ALL="en_US.UTF-8"
+export LANG="en_US.UTF-8"
 export PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
 export REPO_BASE="https://repo.aosc.io/aosc-os/os-arm64/asahi"
-export VERSION_FLAG=https://cdn.asahilinux.org/installer/latest
-export INSTALLER_BASE=https://cdn.asahilinux.org/installer
-export INSTALLER_DATA="$REPO_BASE"/installer_data.json
+export VERSION_FLAG="https://cdn.asahilinux.org/installer/latest"
+export INSTALLER_BASE="https://cdn.asahilinux.org/installer"
+export INSTALLER_DATA="${REPO_BASE}/installer_data.json"
 
-#TMP="$(mktemp -d)"
+# Short hands for formatted output.
+abwarn() { echo -e "[\e[33mWARN\e[0m]:  \e[1m$*\e[0m"; }
+aberr()  { echo -e "[\e[31mERROR\e[0m]: \e[1m$*\e[0m"; }
+abinfo() { echo -e "[\e[96mINFO\e[0m]:  \e[1m$*\e[0m"; }
+abdbg()  { echo -e "[\e[32mDEBUG\e[0m]: \e[1m$*\e[0m"; }
+
 TMP=/tmp/asahi-install
 
-echo
-echo "Bootstrapping installer:"
+echo "------------------------------------------------------"
+echo "Welcome to AOSC OS Installer for Apple Silicon Devices"
+echo "------------------------------------------------------"
 
 if [ -e "$TMP" ]; then
-    mv "$TMP" "$TMP-$(date +%Y%m%d-%H%M%S)"
+	mv "$TMP" "$TMP-$(date +%Y%m%d-%H%M%S)"
 fi
 
 mkdir -p "$TMP"
 cd "$TMP"
 
-echo "  Checking version..."
+echo
+abinfo "... Querying asahi-installer versions ..."
+echo
 
 PKG_VER="$(curl --no-progress-meter -L "$VERSION_FLAG")"
-echo "  Version: $PKG_VER"
+abinfo "... Found asashi-installer version: $PKG_VER ..."
 
 PKG="installer-$PKG_VER.tar.gz"
 
-echo "  Downloading..."
+abinfo "... Downloading asahi-installer ..."
 
-curl --no-progress-meter -L -o "$PKG" "$INSTALLER_BASE/$PKG"
-if ! curl --no-progress-meter -L -O "$INSTALLER_DATA"; then
-	echo "    Error downloading installer_data.json. GitHub might be blocked in your network."
-	echo "    Please consider using a VPN if you experience issues."
-	echo "    Trying workaround..."
-	curl --no-progress-meter -L -O "$INSTALLER_DATA_ALT"
-fi
+curl --no-progress-meter -L -o "$PKG" "$INSTALLER_BASE/$PKG" || \
+	aberr "Error downloading installer_data.json: $?"
 
-echo "  Extracting..."
+echo
+abinfo "... Extracting asahi-installer ..."
+echo
 
-tar xf "$PKG"
+tar xf "$PKG" || \
+	aberr "Error extracting asahi-installer: $?"
 
-echo "  Initializing..."
+echo
+abinfo "... Initializing asahi-installer ..."
 echo
 
 if [ "$USER" != "root" ]; then
-    echo "The installer needs to run as root."
-    echo "Please enter your sudo password if prompted."
-    exec caffeinate -dis sudo -E ./install.sh "$@"
+	abwarn "asahi-installer requires administrative rights."
+	abwarn "Please enter your administrator password when prompted."
+	exec caffeinate -dis sudo -E ./install.sh "$@"
 else
-    exec caffeinate -dis ./install.sh "$@"
+	exec caffeinate -dis ./install.sh "$@"
 fi
