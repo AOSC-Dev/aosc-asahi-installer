@@ -49,6 +49,12 @@ build_postinst() {
 Note: Default user is 'aosc', default password is 'anthon'.
 EOF
 
+	abinfo "${FUNCNAME[0]}: Installing first-boot script and service ($1) ..."
+	install -Dvm755 ../../asahi-scripts/first-boot \
+		usr/bin/first-boot
+	install -Dvm644 ../../asahi-scripts/systemd/first-boot.service \
+		usr/lib/systemd/system/multi-user.target.wants/first-boot.service
+
 	abinfo "${FUNCNAME[0]}: Assembling m1n1 bootloader image ($1) ..."
 	# Note: The m1n1.bin bootloader image is a concat-ed image with m1n1,
 	# device trees (from Kernel), u-boot, and bootloader configuration bundled.
