@@ -70,8 +70,8 @@ EOF
 
 build_sys_image() {
 	abinfo "${FUNCNAME[0]}: Performing pre-build clean up ($1) ..."
-	umount -Rf mnt_$1 || true
-        rm -fv media_$1
+	umount -Rf rootfs_$1 || true
+	rm -fv rootfs_$1
 
 	abinfo "${FUNCNAME[0]}: Detecting image size ..."
 	# Note: ext4 reserves 5% by default, giving it 50% for collaterals.
@@ -85,14 +85,14 @@ build_sys_image() {
 	abinfo "${FUNCNAME[0]}: Determined image size as $image_size Bytes ..."
 
 	abinfo "${FUNCNAME[0]}: Generating image ($1) ..."
-        fallocate -l ${image_size} media_$1
+	fallocate -l ${image_size} rootfs_$1
 
 	abinfo "${FUNCNAME[0]}: Preparing filesystem ($1) ..."
-        mkfs.ext4 media_$1
+	mkfs.ext4 rootfs_$1
 
 	abinfo "${FUNCNAME[0]}: Preparing mount points ($1) ..."
 	mkdir -pv mnt_$1
-        mount -o loop media_$1 mnt_$1
+	mount -o loop rootfs_$1 mnt_$1
 
 	abinfo "${FUNCNAME[0]}: Transferring files to system image ($1) ..."
 	rsync -aAX --info=progress2 aosc-system-$1/ mnt_$1/
@@ -107,7 +107,7 @@ build_grub_efi_image() {
 
 	abinfo "${FUNCNAME[0]}: Preparing to build GRUB EFI image ($1) ..."
 	mkdir -p EFI/{BOOT,aosc,grub}
-        local GRUB_UUID=`blkid -s UUID -o value media_$1`
+	local GRUB_UUID=`blkid -s UUID -o value rootfs_$1`
 
 	local _vmlinux=$(basename $(ls -d aosc-system-$i/boot/vmlinux-*-aosc-asahi | sort -rV | head -1))
 	local _initrd=$(basename $(ls -d aosc-system-$i/boot/initramfs-*aosc-asahi.img | sort -rV | head -1))
@@ -238,8 +238,8 @@ build_asahi_installer_image() {
 		aii/esp/m1n1/boot.bin
 	cp -av EFI \
 		aii/esp/
-        ln -v media_$1 \
-		aii/media
+	ln -v rootfs_$1 \
+		aii/rootfs.img
 
 	abinfo "${FUNCNAME[0]}: Generating system release archive ($1) ..."
 	cd aii
