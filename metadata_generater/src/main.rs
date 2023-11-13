@@ -14,8 +14,10 @@ struct Args {
     os_name: String,
     #[arg(long, value_parser = clap::value_parser!(u32).range(100..))]
     efi_size: u32,
-    #[arg(long, short)]
+    #[arg(long)]
     image_name: String,
+    #[arg(long)]
+    icon: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -30,6 +32,8 @@ struct Os {
     boot_object: String,
     next_object: String,
     package: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    icon: Option<String>,
     supported_fw: Vec<String>,
     partitions: Vec<Partition>,
 }
@@ -60,6 +64,7 @@ fn main() -> Result<()> {
         os_name,
         efi_size,
         image_name,
+        icon,
     } = Args::parse();
 
     let dir = fs::read_dir(path)?;
@@ -99,6 +104,7 @@ fn main() -> Result<()> {
                 boot_object: "m1n1.bin".to_string(),
                 next_object: "m1n1/boot.bin".to_string(),
                 package: file_name.to_string(),
+                icon: icon.clone(),
                 supported_fw: vec!["13.5".to_string()],
                 partitions: vec![
                     Partition {
