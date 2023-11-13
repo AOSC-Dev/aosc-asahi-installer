@@ -26,7 +26,7 @@ struct Args {
 }
 
 #[derive(Debug, Serialize)]
-struct OsList {
+struct InstallerData {
     os_list: Vec<Os>,
 }
 
@@ -74,7 +74,7 @@ fn main() -> Result<()> {
 
     let dir = fs::read_dir(path)?;
 
-    let mut res = vec![];
+    let mut os_list = vec![];
 
     for i in dir.flatten() {
         if i.path().extension().map(|x| x == "zip").unwrap_or(false) {
@@ -95,7 +95,7 @@ fn main() -> Result<()> {
                 }
             }
 
-            let size = size.ok_or_else(|| eyre!("Could not get rootfs file: media"))? as f64
+            let size = size.ok_or_else(|| eyre!("Could not get rootfs file: {image_name}"))? as f64
                 / 1024.0
                 / 1024.0
                 / 1024.0;
@@ -103,7 +103,7 @@ fn main() -> Result<()> {
             let rootfs_size = format!("{}GB", size.round() as u64);
             let display_name = file_name.strip_suffix(".zip").unwrap_or(&file_name);
 
-            res.push(Os {
+            os_list.push(Os {
                 name: format_name(display_name).unwrap_or(display_name.to_string()),
                 default_os_name: os_name.to_string(),
                 boot_object: "m1n1.bin".to_string(),
@@ -139,9 +139,9 @@ fn main() -> Result<()> {
         }
     }
 
-    res.sort_unstable_by(|x, y| x.name.cmp(&y.name));
+    os_list.sort_unstable_by(|x, y| x.name.cmp(&y.name));
 
-    let os = OsList { os_list: res };
+    let os = InstallerData { os_list };
 
     let s = serde_json::to_string_pretty(&os)?;
     println!("{s}");
