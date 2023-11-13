@@ -243,10 +243,20 @@ build_asahi_installer_image() {
 
 	abinfo "${FUNCNAME[0]}: Generating system release archive ($1) ..."
 	cd aii
-        zip -r9 ../aosc-os_${1}_$(date +%Y%m%d)_arm64+asahi.zip esp media
+	zip -r9 ../aosc-os_${1}_$(date +%Y%m%d)_arm64+asahi.zip esp media
 	cd ..
 	sha256sum aosc-os_${1}_$(date +%Y%m%d)_arm64+asahi.zip \
 		>> aosc-os_${1}_$(date +%Y%m%d)_arm64+asahi.zip.sha256sum
+}
+
+build_clean_up() {
+	abinfo "${FUNCNAME[0]}: Cleaning up ($1) ..."
+	rm -rf \
+		aii \
+		aosc-system-$1 \
+		mnt_$1 \
+		rootfs_$i \
+		EFI
 }
 
 abinfo "Creating directories ..."
@@ -263,4 +273,5 @@ for i in "$@"; do
 	build_sys_image $i
 	build_grub_efi_image $i
 	build_asahi_installer_image $i
+	build_clean_up $i
 done
