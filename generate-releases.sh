@@ -65,6 +65,14 @@ EOF
 	gzip -c usr/lib/asahi-boot/u-boot-nodtb.bin >> boot/boot.bin
 	cat etc/m1n1.conf >> boot/boot.bin
 
+	abinfo "${FUNCNAME[0]}: Generating initramfs image ($1) ..."
+	arch-chroot . \
+		update-initramfs
+
+	abinfo "${FUNCNAME[0]}: Resetting root home ($1) ..."
+	rm -rv root/.*
+	cp -av etc/skel/.* root/
+
 	cd ..
 }
 
