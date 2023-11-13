@@ -8,14 +8,19 @@ use zip::ZipArchive;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Args {
+    /// Path to the Asahi image zip file
     #[arg(long, short)]
     path: String,
+    /// Default OS name in asahi-installer
     #[arg(long, short = 'n')]
     os_name: String,
+    /// Size of the EFI partition (in MiB)
     #[arg(long, value_parser = clap::value_parser!(u32).range(100..))]
     efi_size: u32,
+    /// Name of the rootfs in the Asahi image
     #[arg(long)]
     image_name: String,
+    /// The name of the startup item icon in the Asahi image
     #[arg(long)]
     icon: Option<String>,
 }
