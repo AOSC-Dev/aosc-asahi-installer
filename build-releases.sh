@@ -15,7 +15,7 @@ build_rootfs() {
 
 	abinfo "${FUNCNAME[0]}: Generating system release ($1) ..."
 	aoscbootstrap \
-		stable ./aosc-system-$1 http://localhost/debs/ \
+		stable ./aosc-system-$1 ${REPO:-https://repo.aosc.io}/debs/ \
 		--config=/usr/share/aoscbootstrap/config/aosc-mainline.toml \
 		-x \
 		--arch=arm64 \
