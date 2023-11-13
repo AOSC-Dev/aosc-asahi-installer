@@ -122,6 +122,8 @@ EOF
 
 # Debian: see https://salsa.debian.org/philh/grub2/-/blob/dgit/sid/debian/build-efi-images
 # Integrate as many modules as possible, in order to make GRUB discover partitions by UUID
+#
+# FIXME: Use pre-built GRUB image from the `grub` package.
 GRUB_MODULES="
 	all_video
 	boot
