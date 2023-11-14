@@ -33,7 +33,7 @@ echo "... Downloading asahi-installer ..."
 PKG="installer-$PKG_VER.tar.gz"
 curl --no-progress-meter -L -o "$PKG" "$INSTALLER_BASE/$PKG"
 if [ $? != 0 ]; then
-	echo "Error downloading installer_data.json: $?"
+	echo "Error downloading asahi-installer: $?"
 	exit 1
 fi
 
