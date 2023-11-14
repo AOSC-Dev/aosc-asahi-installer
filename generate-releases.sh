@@ -123,7 +123,7 @@ build_grub_efi_image() {
 	local _initrd=$(basename $(ls -d aosc-system-$i/boot/initramfs-*aosc-asahi.img | sort -rV | head -1))
 
 	abinfo "${FUNCNAME[0]}: Generating grub.cfg ($1) ..."
-	cat > grub.cfg << EOF
+	cat > EFI/aosc/grub.cfg << EOF
 search.fs_uuid $GRUB_UUID root
 linux (\$root)/boot/$_vmlinux root=UUID=$GRUB_UUID quiet rw rd.auto rd.auto=1 splash
 initrd (\$root)/boot/$_initrd
@@ -232,13 +232,9 @@ GRUB_MODULES="
 	abinfo "${FUNCNAME[0]}: Generating GRUB image ($1) ..."
 	/usr/bin/grub-mkimage \
 		-O arm64-efi \
-		-o ./bootaa64.efi \
+		-o EFI/BOOT/BOOTAA64.EFI \
 		-p /EFI/aosc \
 		$GRUB_MODULES
-
-	abinfo "${FUNCNAME[0]}: Installing GRUB image ($1) ..."
-	install -Dvm644 -v ./bootaa64.efi EFI/BOOT/BOOTAA64.EFI
-	install -Dvm644 -v ./grub.cfg EFI/aosc
 }
 
 build_asahi_installer_image() {
