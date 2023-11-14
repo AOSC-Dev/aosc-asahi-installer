@@ -38,7 +38,6 @@ if [ $? != 0 ]; then
 fi
 
 echo "... Extracting asahi-installer ..."
-
 tar xf "$PKG"
 if [ $? != 0 ]; then
 	echo "Error extracting asahi-installer: $?"
