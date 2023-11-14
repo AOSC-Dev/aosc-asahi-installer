@@ -5,7 +5,9 @@ LC_ALL="en_US.UTF-8"
 LANG="en_US.UTF-8"
 PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
-REPO_BASE="https://repo.aosc.io/aosc-os/os-arm64/asahi"
+# Note: asahi-installer uses the REPO_BASE variable to determine the HTTP(S)
+# root for system releases.
+export REPO_BASE="https://repo.aosc.io/aosc-os/os-arm64/asahi"
 VERSION_FLAG="https://cdn.asahilinux.org/installer/latest"
 INSTALLER_BASE="https://cdn.asahilinux.org/installer"
 INSTALLER_DATA="${REPO_BASE}/installer_data.json"
