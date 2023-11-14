@@ -44,6 +44,13 @@ if [ $? != 0 ]; then
 	exit 1
 fi
 
+echo "... Querying AOSC OS system releases ..."
+curl --no-progress-meter -L -O "$INSTALLER_DATA"
+if [ $? != 0 ]; then
+	echo "Error querying AOSC OS system releases: $?"
+	exit 1
+fi
+
 echo "------------------------------------------------------"
 echo "             Initializing asahi-installer             "
 echo "------------------------------------------------------"
