@@ -53,6 +53,8 @@ EOF
 	install -Dvm755 ../../asahi-scripts/first-boot \
 		usr/bin/first-boot
 	install -Dvm644 ../../asahi-scripts/systemd/first-boot.service \
+		usr/lib/systemd/system/first-boot.service
+	ln -sv ../first-boot.service \
 		usr/lib/systemd/system/multi-user.target.wants/first-boot.service
 
 	abinfo "${FUNCNAME[0]}: Assembling m1n1 bootloader image ($1) ..."
