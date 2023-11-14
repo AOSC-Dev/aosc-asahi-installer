@@ -10,14 +10,9 @@ export VERSION_FLAG="https://cdn.asahilinux.org/installer/latest"
 export INSTALLER_BASE="https://cdn.asahilinux.org/installer"
 export INSTALLER_DATA="${REPO_BASE}/installer_data.json"
 
-# Short hands for formatted output.
-abwarn() { echo -e "[\e[33mWARN\e[0m]:  \e[1m$*\e[0m"; }
-aberr()  { echo -e "[\e[31mERROR\e[0m]: \e[1m$*\e[0m"; }
-abinfo() { echo -e "[\e[96mINFO\e[0m]:  \e[1m$*\e[0m"; }
-abdbg()  { echo -e "[\e[32mDEBUG\e[0m]: \e[1m$*\e[0m"; }
+TMP="/tmp/asahi-install"
 
-TMP=/tmp/asahi-install
-
+echo
 echo "------------------------------------------------------"
 echo "Welcome to AOSC OS Installer for Apple Silicon Devices"
 echo "------------------------------------------------------"
@@ -29,34 +24,34 @@ fi
 mkdir -p "$TMP"
 cd "$TMP"
 
-echo
-abinfo "... Querying asahi-installer versions ..."
-echo
-
+echo "... Querying asahi-installer versions ..."
 PKG_VER="$(curl --no-progress-meter -L "$VERSION_FLAG")"
-abinfo "... Found asashi-installer version: $PKG_VER ..."
 
+echo "... Found asashi-installer version: $PKG_VER ..."
+
+echo "... Downloading asahi-installer ..."
 PKG="installer-$PKG_VER.tar.gz"
+curl --no-progress-meter -L -o "$PKG" "$INSTALLER_BASE/$PKG"
+if [ $? != 0 ]; then
+	echo "Error downloading installer_data.json: $?"
+	exit 1
+fi
 
-abinfo "... Downloading asahi-installer ..."
+echo "... Extracting asahi-installer ..."
 
-curl --no-progress-meter -L -o "$PKG" "$INSTALLER_BASE/$PKG" || \
-	aberr "Error downloading installer_data.json: $?"
+tar xf "$PKG"
+if [ $? != 0 ]; then
+	echo "Error extracting asahi-installer: $?"
+	exit 1
+fi
 
-echo
-abinfo "... Extracting asahi-installer ..."
-echo
-
-tar xf "$PKG" || \
-	aberr "Error extracting asahi-installer: $?"
-
-echo
-abinfo "... Initializing asahi-installer ..."
-echo
+echo "------------------------------------------------------"
+echo "             Initializing asahi-installer             "
+echo "------------------------------------------------------"
 
 if [ "$USER" != "root" ]; then
-	abwarn "asahi-installer requires administrative rights."
-	abwarn "Please enter your administrator password when prompted."
+	echo "asahi-installer requires administrative rights."
+	echo "Please enter your administrator password when prompted."
 	exec caffeinate -dis sudo -E ./install.sh "$@"
 else
 	exec caffeinate -dis ./install.sh "$@"
