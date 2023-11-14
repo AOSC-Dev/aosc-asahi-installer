@@ -25,7 +25,7 @@ mkdir -p "$TMP"
 cd "$TMP"
 
 echo "... Querying asahi-installer versions ..."
-PKG_VER="$(curl --no-progress-meter -L "$VERSION_FLAG")"
+PKG_VER="$(curl --no-progress-meter -L $VERSION_FLAG)"
 
 echo "... Found asashi-installer version: $PKG_VER ..."
 
