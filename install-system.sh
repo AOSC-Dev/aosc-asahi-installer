@@ -1,14 +1,14 @@
 #!/bin/bash -e
 # SPDX-License-Identifier: MIT
 
-export LC_ALL="en_US.UTF-8"
-export LANG="en_US.UTF-8"
-export PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
+LC_ALL="en_US.UTF-8"
+LANG="en_US.UTF-8"
+PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
-export REPO_BASE="https://repo.aosc.io/aosc-os/os-arm64/asahi"
-export VERSION_FLAG="https://cdn.asahilinux.org/installer/latest"
-export INSTALLER_BASE="https://cdn.asahilinux.org/installer"
-export INSTALLER_DATA="${REPO_BASE}/installer_data.json"
+REPO_BASE="https://repo.aosc.io/aosc-os/os-arm64/asahi"
+VERSION_FLAG="https://cdn.asahilinux.org/installer/latest"
+INSTALLER_BASE="https://cdn.asahilinux.org/installer"
+INSTALLER_DATA="${REPO_BASE}/installer_data.json"
 
 TMP="/tmp/asahi-install"
 
