@@ -62,9 +62,13 @@ EOF
 	# device trees (from Kernel), u-boot, and bootloader configuration bundled.
 	#
 	# Ref: https://github.com/AsahiLinux/asahi-scripts/blob/4788327780a583b7ed701bc400394816b9792c53/update-m1n1#L51
+	ls -l usr/lib/asahi-boot/m1n1.bin
 	cat usr/lib/asahi-boot/m1n1.bin >> boot/boot.bin
+	ls -l usr/lib/aosc-os-arm64-boot/dtbs-kernel-$(basename $(ls -d usr/lib/modules/*-aosc-asahi | sort -rV | head -1 ))/*.dtb
 	cat usr/lib/aosc-os-arm64-boot/dtbs-kernel-$(basename $(ls -d usr/lib/modules/*-aosc-asahi | sort -rV | head -1 ))/*.dtb >> boot/boot.bin
+	ls -l usr/lib/asahi-boot/u-boot-nodtb.bin
 	gzip -c usr/lib/asahi-boot/u-boot-nodtb.bin >> boot/boot.bin
+	ls -l etc/m1n1.conf
 	cat etc/m1n1.conf >> boot/boot.bin
 
 	abinfo "${FUNCNAME[0]}: Generating initramfs image ($1) ..."
