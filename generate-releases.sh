@@ -68,8 +68,11 @@ EOF
 	cat usr/lib/aosc-os-arm64-boot/dtbs-kernel-$(basename $(ls -d usr/lib/modules/*-aosc-asahi | sort -rV | head -1 ))/*.dtb >> boot/boot.bin
 	ls -l usr/lib/asahi-boot/u-boot-nodtb.bin
 	gzip -c usr/lib/asahi-boot/u-boot-nodtb.bin >> boot/boot.bin
-	ls -l etc/m1n1.conf
-	cat etc/m1n1.conf >> boot/boot.bin
+	# FIXME: m1n1 does not function properly with configuration attached.
+	# A node in device tree called 'chosen/asahi,efi-boot-partition' will
+	# not appear in the DT if we have the configuration attached to m1n1.
+	# ls -l etc/m1n1.conf
+	# cat etc/m1n1.conf >> boot/boot.bin
 
 	abinfo "${FUNCNAME[0]}: Generating initramfs image ($1) ..."
 	arch-chroot . \
