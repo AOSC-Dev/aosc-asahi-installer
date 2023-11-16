@@ -140,7 +140,14 @@ EOF
 # Debian: see https://salsa.debian.org/philh/grub2/-/blob/dgit/sid/debian/build-efi-images
 # Integrate as many modules as possible, in order to make GRUB discover partitions by UUID
 #
-# FIXME: Use pre-built GRUB image from the `grub` package.
+# ~Mingcong: Use pre-built GRUB image from the `grub` package.
+# It is not possible to use the prebuilt image from `grub`, since it is built
+# with the prefix /boot/grub, which is hard-coded to the grub image.
+# The image we are building is meant to use with EFI medias, since we are
+# building it with the prefix /EFI/aosc, so that a config file can present
+# in EFI partition at /EFI/aosc/grub.cfg, without hard-coding filesystem UUID
+# of the boot partition to make it bootable.
+# ~Cyan
 GRUB_MODULES="
 	all_video
 	boot
