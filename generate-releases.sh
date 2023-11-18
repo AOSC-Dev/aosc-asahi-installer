@@ -263,9 +263,13 @@ build_asahi_installer_image() {
 	ln -v rootfs_$1 \
 		aii/rootfs.img
 
+	abinfo "${FUNCNAME[0]}: Copying logo..."
+	cp ../logo/aosc-os-asahi-128.icns \
+		aii/aosc-os-128.icns
+
 	abinfo "${FUNCNAME[0]}: Generating system release archive ($1) ..."
 	cd aii
-	zip -r9 ../aosc-os_${1}_$(date +%Y%m%d)_arm64+asahi.zip esp rootfs.img
+	zip -r9 ../aosc-os_${1}_$(date +%Y%m%d)_arm64+asahi.zip esp rootfs.img aosc-os-128.icns
 	cd ..
 	sha256sum aosc-os_${1}_$(date +%Y%m%d)_arm64+asahi.zip \
 		>> aosc-os_${1}_$(date +%Y%m%d)_arm64+asahi.zip.sha256sum
