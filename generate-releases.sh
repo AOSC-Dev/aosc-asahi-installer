@@ -22,7 +22,9 @@ build_rootfs() {
 
 	abinfo "${FUNCNAME[0]}: Generating system release ($1) ..."
 	aoscbootstrap \
-		stable ./aosc-system-$1 ${REPO:-https://repo.aosc.io}/debs/ \
+		--branch stable \
+		--target ./aosc-system-$1 \
+		--mirror ${REPO:-https://repo.aosc.io}/debs/ \
 		--config=/usr/share/aoscbootstrap/config/aosc-mainline.toml \
 		-x \
 		--arch=arm64 \
