@@ -67,6 +67,16 @@ build_postinst() {
 	arch-chroot . \
 		update-initramfs
 
+	abinfo "Enabling PipeWire ..."
+	mkdir -pv etc/systemd/user/sockets.target.wants \
+		etc/systemd/user/pipewire.service.wants
+	ln -svf /usr/lib/systemd/user/pipewire.socket \
+		etc/systemd/user/sockets.target.wants/pipewire.socket
+	ln -svf /usr/lib/systemd/user/pipewire-pulse.socket \
+		etc/systemd/user/sockets.target.wants/pipewire-pulse.socket
+	ln -svf /usr/lib/systemd/user/wireplumber.service \
+		etc/systemd/user/pipewire.service.wants/wireplumber.service
+
 	abinfo "${FUNCNAME[0]}: Resetting root home ($1) ..."
 	rm -rv root/.*
 	cp -av etc/skel/.* root/
