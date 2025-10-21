@@ -3,6 +3,13 @@
 # Enabling some extra Bash scripting features.
 shopt -s extglob
 
+# If local testing is enabled, do not compress the archive.
+if [ "$LOCAL_TESTING" = "1" ] ; then
+	ZIP_ARG=""
+else
+	ZIP_ARG="-r9"
+fi
+
 # Short hands for formatted output.
 abwarn() { echo -e "[\e[33mWARN\e[0m]:  \e[1m$*\e[0m"; }
 aberr()  { echo -e "[\e[31mERROR\e[0m]: \e[1m$*\e[0m"; }
