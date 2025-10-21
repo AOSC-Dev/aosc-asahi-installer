@@ -81,6 +81,9 @@ build_postinst() {
 	rm -rv root/.*
 	cp -av etc/skel/.* root/
 
+	abinfo "Resetting machine-id ..."
+	echo "uninitialized" > etc/machine-id
+
 	cd ..
 }
 
