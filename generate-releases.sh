@@ -42,29 +42,9 @@ build_postinst() {
 	abinfo "${FUNCNAME[0]}: Setting hostname ($1) ..."
 	echo aosc-asahi > etc/hostname
 
-	abinfo "${FUNCNAME[0]}: Setting up a default user (aosc) ($1) ..."
+	abinfo "${FUNCNAME[0]}: Creating devena-firstboot initramfs image ..."
 	arch-chroot . \
-		useradd aosc -m
-	arch-chroot . \
-		usermod -a -G audio,cdrom,video,wheel aosc
-
-	abinfo "${FUNCNAME[0]}: Setting up a default password (anthon) ($1) ..."
-	arch-chroot . \
-		bash -c "echo 'aosc:anthon' | chpasswd -c SHA512"
-
-	abinfo "${FUNCNAME[0]}: Setting up a login banner to prompt user of the default user and password ($1) ..."
-	mkdir -pv etc/issue.d
-	cat > etc/issue.d/asahi.issue << EOF
-Note: Default user is 'aosc', default password is 'anthon'.
-EOF
-
-	abinfo "${FUNCNAME[0]}: Installing first-boot script and service ($1) ..."
-	install -Dvm755 ../../asahi-scripts/first-boot \
-		usr/bin/first-boot
-	install -Dvm644 ../../asahi-scripts/systemd/first-boot.service \
-		usr/lib/systemd/system/first-boot.service
-	ln -sv ../first-boot.service \
-		usr/lib/systemd/system/multi-user.target.wants/first-boot.service
+		create-devena-initrd
 
 	abinfo "${FUNCNAME[0]}: Assembling m1n1 bootloader image ($1) ..."
 	# Note: The m1n1.bin bootloader image is a concat-ed image with m1n1,
@@ -136,13 +116,14 @@ build_grub_efi_image() {
 	local GRUB_UUID=`blkid -s UUID -o value rootfs_$1`
 
 	local _vmlinux=$(basename $(ls -d aosc-system-$i/boot/vmlinux-*-aosc-asahi | sort -rV | head -1))
-	local _initrd=$(basename $(ls -d aosc-system-$i/boot/initramfs-*aosc-asahi.img | sort -rV | head -1))
 
 	abinfo "${FUNCNAME[0]}: Generating grub.cfg ($1) ..."
 	cat > EFI/aosc/grub.cfg << EOF
 search.fs_uuid $GRUB_UUID root
+echo 'Booting AOSC OS for the first time ...'
+echo 'The first boot setup procedure will take place shortly.'
 linux (\$root)/boot/$_vmlinux root=UUID=$GRUB_UUID quiet rw rd.auto rd.auto=1 splash
-initrd (\$root)/boot/$_initrd
+initrd (\$root)/boot/devena-firstboot.img
 boot
 EOF
 
