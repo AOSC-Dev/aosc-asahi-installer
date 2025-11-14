@@ -5,7 +5,7 @@ shopt -s extglob
 
 # If local testing is enabled, do not compress the archive.
 if [ "$LOCAL_TESTING" = "1" ] ; then
-	ZIP_ARG=""
+	ZIP_ARG="-r"
 else
 	ZIP_ARG="-r9"
 fi
