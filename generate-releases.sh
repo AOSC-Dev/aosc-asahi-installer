@@ -24,7 +24,7 @@ build_rootfs() {
 	aoscbootstrap \
 		--branch stable \
 		--target ./aosc-system-$1 \
-		--mirror ${REPO:-https://repo.aosc.io}/debs/ \
+		--mirror ${REPO:-https://repo.aosc.io}/anthon/debs/ \
 		--config=/usr/share/aoscbootstrap/config/aosc-mainline.toml \
 		-x \
 		--arch=arm64 \

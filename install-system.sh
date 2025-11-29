@@ -7,7 +7,7 @@ PATH="/usr/bin:/bin:/usr/sbin:/sbin:$PATH"
 
 # Note: asahi-installer uses the REPO_BASE variable to determine the HTTP(S)
 # root for system releases.
-export REPO_BASE="https://repo.aosc.io/aosc-os/os-arm64/asahi"
+export REPO_BASE="https://repo.aosc.io/anthon/aosc-os/os-arm64/asahi"
 VERSION_FLAG="https://releases.aosc.io/os-arm64/asahi/installer/latest"
 INSTALLER_BASE="https://releases.aosc.io/os-arm64/asahi/installer"
 INSTALLER_DATA="${REPO_BASE}/installer_data.json"
