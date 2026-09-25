@@ -53,8 +53,8 @@ build_postinst() {
 	# Ref: https://github.com/AsahiLinux/asahi-scripts/blob/4788327780a583b7ed701bc400394816b9792c53/update-m1n1#L51
 	ls -l usr/lib/asahi-boot/m1n1.bin
 	cat usr/lib/asahi-boot/m1n1.bin >> boot/boot.bin
-	ls -l usr/lib/aosc-os-arm64-boot/dtbs-kernel-$(basename $(ls -d usr/lib/modules/*-aosc-asahi | sort -rV | head -1 ))/*.dtb
-	cat usr/lib/aosc-os-arm64-boot/dtbs-kernel-$(basename $(ls -d usr/lib/modules/*-aosc-asahi | sort -rV | head -1 ))/*.dtb >> boot/boot.bin
+	ls -l usr/lib/aosc-os-arm64-boot/dtbs-kernel-$(basename $(ls -d usr/lib/modules/*-aosc-asahi | sort -rV | head -1 ))/apple/t6*.dtb usr/lib/aosc-os-arm64-boot/dtbs-kernel-$(basename $(ls -d usr/lib/modules/*-aosc-asahi | sort -rV | head -1 ))/apple/t81*.dtb
+	cat usr/lib/aosc-os-arm64-boot/dtbs-kernel-$(basename $(ls -d usr/lib/modules/*-aosc-asahi | sort -rV | head -1 ))/apple/t6*.dtb usr/lib/aosc-os-arm64-boot/dtbs-kernel-$(basename $(ls -d usr/lib/modules/*-aosc-asahi | sort -rV | head -1 ))/apple/t81*.dtb >> boot/boot.bin
 	ls -l usr/lib/asahi-boot/u-boot-nodtb.bin
 	gzip -c usr/lib/asahi-boot/u-boot-nodtb.bin >> boot/boot.bin
 	# FIXME: m1n1 does not function properly with configuration attached.
